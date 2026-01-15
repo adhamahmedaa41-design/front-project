@@ -12,8 +12,9 @@
   "dependencies": {
     "react": "^19.0.0-rc-f994737d14-20240522",
     "react-dom": "^19.0.0-rc-f994737d14-20240522",
-    "react-router-dom": "^6.27.0"          
-
+    "react-router-dom": "^6.27.0",
+    "react-redux": "^9.2.0",             
+    "@reduxjs/toolkit": "^2.3.0"          
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
