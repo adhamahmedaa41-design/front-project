@@ -23,70 +23,55 @@ function Register() {
     const email = emailRef.current?.value?.trim();
     const password = passwordRef.current?.value;
 
-    // Client-side validation (empty fields)
     if (!email || !password) {
       const msg = "Please fill in all fields";
       setError(msg);
-      toast.error(msg, { duration: 4000 });
+      toast.error(msg);
       return;
     }
 
     setLoading(true);
-    setError(""); // clear previous error
+    setError("");
 
     try {
       const data = { email, password };
 
       const response = await api.post("/api/auth/register", data);
 
-      // Success
-      toast.success(response.data.message || "Registration successful! Check your email.", {
+      toast.success(response.data.message || "Registration successful! Check your email for OTP.", {
         duration: 5000,
       });
+
       setSuccess(true);
 
-      // Optional navigation (uncomment when needed)
-      go("/verify-otp");
+      // Save email for OTP page
+      localStorage.setItem("registeredEmail", email);
+
+      // Redirect to OTP verification
+      setTimeout(() => {
+        navigate("/verify-otp");
+      }, 1500);
 
     } catch (error) {
       let errorMessage = "Registration failed. Please try again.";
-      let toastOptions = { duration: 5000 };
 
       if (error.response) {
         const { status, data } = error.response;
-
-        // 400 - Validation errors (most common)
-        if (status === 400) {
-          if (data.message === "Validation failed" && Array.isArray(data.errors)) {
-            // Show all validation errors in toast
-            errorMessage = data.errors.join(" • ");
-            toastOptions = { duration: 6000 }; // longer for multiple errors
-          } else if (data.message) {
-            errorMessage = data.message;
-          }
-        }
-        // 409 - Email already exists
-        else if (status === 409) {
-          errorMessage = data.message || "This email is already registered";
-        }
-        // 500 - Server error
-        else if (status === 500) {
-          errorMessage = "Server error occurred. Please try again later.";
-        }
-        // Other status codes
-        else {
-          errorMessage = data.message || `Error ${status}: Something went wrong`;
+        if (status === 400 && data.message === "Validation failed" && Array.isArray(data.errors)) {
+          errorMessage = data.errors.join(" • ");
+        } else if (data?.message) {
+          errorMessage = data.message;
+        } else if (status === 409) {
+          errorMessage = "This email is already registered";
+        } else if (status === 500) {
+          errorMessage = "Server error. Please try again later.";
         }
       } else if (error.request) {
-        // No response received → network / CORS / server down
-        errorMessage = "Cannot connect to server. Please check your internet connection.";
-      } else {
-        // Something happened in setting up the request
-        errorMessage = error.message || "An unexpected error occurred";
+        errorMessage = "Cannot connect to server. Check your internet.";
       }
 
       setError(errorMessage);
-      toast.error(errorMessage, toastOptions);
+      toast.error(errorMessage, { duration: 5000 });
     } finally {
       setLoading(false);
     }
@@ -140,17 +125,12 @@ function Register() {
               onClick={handleTogglePassword}
               disabled={loading}
             >
-              {showPassword ? <FaEyeSlash /> : <FaEye />}
+              {showPassword ? <FaEye /> : <FaEyeSlash />}
             </InputGroup.Text>
           </InputGroup>
         </Form.Group>
 
-        <Button
-          variant="primary"
-          type="submit"
-          className="w-100"
-          disabled={loading}
-        >
+        <Button variant="primary" type="submit" className="w-100" disabled={loading}>
           Register
         </Button>
       </Form>
