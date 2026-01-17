@@ -1,9 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: import.meta.env.PROD
-    ? import.meta.env.VITE_API_URL
-    : "http://localhost:5000",   // ← Use 5000 here, since backend is on 5000
+  baseURL: "http://localhost:5000", // ← Backend runs on 5000
 });
 
 api.interceptors.request.use(config => {
